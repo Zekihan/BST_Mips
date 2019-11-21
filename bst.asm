@@ -1,6 +1,6 @@
 .data
 # -9999 marks end of the list
-firstList: .word 8, 3, 2, 1, -9999
+firstList: .word 8, 3, 6, 10, 13, 7, 4, 5, -9999
 
 secondList: .word 8, 9, 6, 10, 13, 7, 4, 5, -9999
 
@@ -115,8 +115,10 @@ insert_right:
 
 	
 	lw $t3,8($t9)
-	
+	la $t8,($t9)
+	lw $t9,8($t9)
 	bne $t3,$zero,insert
+	la $t9,($t8)
 	
 	la $t7, ($a0)
 	li $a0 16 #enough space for four integers
@@ -124,15 +126,13 @@ insert_right:
 	syscall
 	
 	move $a0,$t7
-	move $t2,$v0
+	move $t7,$v0
 
-	sw $t4,0($t2) #put the first number in the list to the tree
-	sw $zero, 4($t2) # make paren and child nodes with 0
-	sw $zero, 8($t2)
-	sw $t9, 12($t2)
-	sw $t2, 8($t9)
-	
-	la $a1, ($t4)
+	sw $t1,0($t7) #put the first number in the list to the tree
+	sw $zero, 4($t7) # make parent and child nodes with 0
+	sw $zero, 8($t7)
+	sw $t9, 12($t7)
+	sw $t7, 8($t9)
 	
 	jr $ra
 		
