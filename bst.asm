@@ -90,9 +90,10 @@ contains:
 insert_left:
 	
 	lw $t3,4($t9)
-	addi $t9,$t9,4
+	la $t8,($t9)
+	lw $t9,4($t9)
 	bne $t3,$zero,insert
-	addi $t9,$t9,-4
+	la $t9,($t8)
 	
 	la $t7, ($a0)
 	li $a0 16 #enough space for four integers
@@ -105,7 +106,7 @@ insert_left:
 	sw $t1,0($t7) #put the first number in the list to the tree
 	sw $zero, 4($t7) # make parent and child nodes with 0
 	sw $zero, 8($t7)
-	sw $t2, 12($t7)
+	sw $t9, 12($t7)
 	sw $t7, 4($t9)
 	
 	jr $ra
