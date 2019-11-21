@@ -74,7 +74,6 @@ whileloop:
 
 
 	beq $a0, -9999, out # if -9999 breakout from loop
-	la $t9, ($a1) # load t9 with root address
 	jal insert
 	j whileloop
 
@@ -86,7 +85,7 @@ out:
 
 insert:
 
-	lw $t2,0($t9) # load with root value
+	lw $t2,0($a1) # load with root value
 
 	beq $a0,$t2, contains # if its same, print contains
 	slt $t3,$a0,$t2
@@ -108,10 +107,10 @@ contains:
 
 insert_left:
 	
-	la $t8,($t9) # temporaryly move t9(current root address) to t8
-	lw $t9,4($t9) # take left child address or 0
-	bne $t9,$zero,insert # if not zero use that address as new root 
-	la $t9,($t8) # if zero use old one as root
+	la $t8,($a1) # temporaryly move t9(current root address) to t8
+	lw $a1,4($a1) # take left child address or 0
+	bne $a1,$zero,insert # if not zero use that address as new root 
+	la $a1,($t8) # if zero use old one as root
 	
 	la $t7, ($a0) # temporaryly move a0 to t7
 	li $a0 16 # enough space for four integers
@@ -124,17 +123,18 @@ insert_left:
 	sw $a0,0($t7) # the argument first address
 	sw $zero, 4($t7) # make children nodes with 0
 	sw $zero, 8($t7)
-	sw $t9, 12($t7) # make parent node as current node
-	sw $t7, 4($t9) # go parents left node make new address
+	sw $a1, 12($t7) # make parent node as current node
+	sw $t7, 4($a1) # go parents left node make new address
 	
+	la $a1,($s0) # load original root to a1
 	jr $ra
 	
 insert_right:
 
-	la $t8,($t9) # temporaryly move t9(current root address) to t8
-	lw $t9,8($t9) # take left child address or 0
-	bne $t9,$zero,insert # if not zero use that address as new root 
-	la $t9,($t8) # if zero use old one as root
+	la $t8,($a1) # temporaryly move t9(current root address) to t8
+	lw $a1,8($a1) # take left child address or 0
+	bne $a1,$zero,insert # if not zero use that address as new root 
+	la $a1,($t8) # if zero use old one as root
 	
 	la $t7, ($a0) # temporaryly move a0 to t7
 	li $a0 16 #enough space for four integers
@@ -147,9 +147,10 @@ insert_right:
 	sw $a0,0($t7) # the argument first address
 	sw $zero, 4($t7) # make children nodes with 0
 	sw $zero, 8($t7)
-	sw $t9, 12($t7) # make parent node as current node
-	sw $t7, 8($t9) # go parents left node make new address
-	
+	sw $a1, 12($t7) # make parent node as current node
+	sw $t7, 8($a1) # go parents left node make new address
+
+	la $a1,($s0) # load original root to a1	
 	jr $ra
 		
 	
