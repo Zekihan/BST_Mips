@@ -68,12 +68,12 @@ create_root:
 whileloop:
 	
 	addi $t0,$t0,4
-	lw $t1,0($t0)
+	lw $a0,0($t0)
 
 
-	beq $t1, -9999, out
+	beq $a0, -9999, out
 	la $t9, ($a1) #load t9 with root address
-	jal insert_helper
+	jal insert
 	j whileloop
 
 out:
@@ -81,18 +81,15 @@ out:
 	addi $sp,$sp,4
 	jr $ra
 
-insert:
-	move $t1,$a0
-	jal insert_helper
 
-insert_helper:
+insert:
 
 	lw $t2,0($t9) # load with root value
 
-	beq $t1,$t2, contains # if its same, print contains
-	slt $t3,$t1,$t2
+	beq $a0,$t2, contains # if its same, print contains
+	slt $t3,$a0,$t2
 	beq $t3, 1, insert_left # branch if lesser
-	sgt $t3,$t1,$t2
+	sgt $t3,$a0,$t2
 	beq $t3, 1, insert_right # branch if greater
 	
 	jr $ra
@@ -100,10 +97,11 @@ insert_helper:
 
 contains:
 	
+	move $t6,$a0
 	la $a0, containsf
     li $v0, 4
     syscall
-    
+    move $a0,$t6
     jr $ra	
 
 insert_left:
@@ -111,7 +109,7 @@ insert_left:
 	lw $t3,4($t9)
 	la $t8,($t9)
 	lw $t9,4($t9)
-	bne $t3,$zero,insert_helper
+	bne $t3,$zero,insert
 	la $t9,($t8)
 	
 	la $t7, ($a0)
@@ -122,7 +120,7 @@ insert_left:
 	move $a0,$t7
 	move $t7,$v0
 
-	sw $t1,0($t7) #put the first number in the list to the tree
+	sw $a0,0($t7) #put the first number in the list to the tree
 	sw $zero, 4($t7) # make parent and child nodes with 0
 	sw $zero, 8($t7)
 	sw $t9, 12($t7)
@@ -136,7 +134,7 @@ insert_right:
 	lw $t3,8($t9)
 	la $t8,($t9)
 	lw $t9,8($t9)
-	bne $t3,$zero,insert_helper
+	bne $t3,$zero,insert
 	la $t9,($t8)
 	
 	la $t7, ($a0)
@@ -147,7 +145,7 @@ insert_right:
 	move $a0,$t7
 	move $t7,$v0
 
-	sw $t1,0($t7) #put the first number in the list to the tree
+	sw $a0,0($t7) #put the first number in the list to the tree
 	sw $zero, 4($t7) # make parent and child nodes with 0
 	sw $zero, 8($t7)
 	sw $t9, 12($t7)
