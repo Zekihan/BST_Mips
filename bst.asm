@@ -32,10 +32,55 @@ main:
     # if returned address's value != 11 print failed 
     jal assertEquals
     
+    move $a0, $s0
+    li $a1, 11
+    jal find
+    # if returned address's value != 11 print failed 
+    lw $a0, 0($v1)
+    jal assertEquals
+
+    move $a0, $s0
+    li $a1, 44
+    jal find
+    # if returned value of $v0 != 0 print failed
+    move $a0, $v0
+    li $a1, 0
+    jal assertEquals
+    
 	li $v0, 10
     syscall
 
+find:
+	lw $t2,0($a0) # load with root value
 
+	beq $zero,$t2, notfound # if root is empty not found
+	beq $a1,$t2, found # if its same, print contains
+	slt $t3,$a1,$t2
+	beq $t3, 1, find_left # branch if lesser
+	sgt $t3,$a1,$t2
+	beq $t3, 1, find_right # branch if greater
+	
+	jr $ra
+
+find_left:
+	lw $a0,4($a0) # make left child current root
+	beq $a0,$zero,notfound # if zero not found
+	lw $t7,0($a0) # take roots value
+	j find
+
+find_right:
+	lw $a0,8($a0) # make right child current root
+	beq $a0,$zero,notfound
+	lw $t7,0($a0) # take roots value
+	j find 
+
+found:
+	li $v0,1 # make return v0 1
+	la $v1,($a0) # make return v1 the address of node
+	jr $ra
+notfound:
+	li $v0,0 # make return v0 0
+	jr $ra
 build:
 
 	addi $sp,$sp,-4 # save ra
@@ -107,7 +152,7 @@ contains:
 
 insert_left:
 	
-	la $t8,($a1) # temporaryly move t9(current root address) to t8
+	la $t8,($a1) # temporaryly move current root address to t8
 	lw $a1,4($a1) # take left child address or 0
 	bne $a1,$zero,insert # if not zero use that address as new root 
 	la $a1,($t8) # if zero use old one as root
@@ -131,7 +176,7 @@ insert_left:
 	
 insert_right:
 
-	la $t8,($a1) # temporaryly move t9(current root address) to t8
+	la $t8,($a1) # temporaryly move current root address to t8
 	lw $a1,8($a1) # take left child address or 0
 	bne $a1,$zero,insert # if not zero use that address as new root 
 	la $a1,($t8) # if zero use old one as root
