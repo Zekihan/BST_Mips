@@ -14,37 +14,37 @@ asertNumber: .word 0
 .text
 main:
 	
-    la $a0, firstList #load list to a0
+    la $a0, firstList # load list to a0
 
-    jal build #create root store address at a1
+	jal create_root
+    jal build #build the tree
     
-    addi $sp,$sp,-4
-	addi $t0,$ra,20 # send ra to 5 lines below
-	sw $t0,4($sp)
-	
-	la $t0, ($a0)
-    jal whileloop
-	
+    lw $t0, 4($s0) # real address of the left child of the root
+    lw $a0, 0($t0) # real value of the left child of the root
+    li $a1, 3 # expected value of the left child of the root
+    # if left child != 3 then print failed 
+    jal assertEquals
+    
+    li $a0, 11
+    move $a1, $s0
+    jal insert
+    lw $a1, 0($v0)
+    # if returned address's value != 11 print failed 
+    jal assertEquals
 	
     li $v0, 10
     syscall
 
-whileloop:
-	
-	addi $t0,$t0,4
-	lw $t1,0($t0)
-
-
-	beq $t1, -9999, out
-	la $t9, ($a1) #load t9 with root address
-	jal insert
-	j whileloop
-
-out:
-	lw $ra,4($sp)
-	addi $sp,$sp,4
-	jr $ra
 build:
+	addi $sp,$sp,-4
+	addi $t0,$ra,0 # send ra to 5 lines below
+	sw $t0,4($sp)
+	
+	la $t0, ($a0)
+    jal whileloop
+
+
+create_root:
 
 	#temporaryly move a0 to t0
 	la $t0, ($a0)
@@ -65,8 +65,27 @@ build:
 	la $s0, ($t1) #load a1 with root address
 
 	jr $ra
+whileloop:
+	
+	addi $t0,$t0,4
+	lw $t1,0($t0)
+
+
+	beq $t1, -9999, out
+	la $t9, ($a1) #load t9 with root address
+	jal insert_helper
+	j whileloop
+
+out:
+	lw $ra,4($sp)
+	addi $sp,$sp,4
+	jr $ra
 
 insert:
+	move $t1,$a0
+	jal insert_helper
+
+insert_helper:
 
 	lw $t2,0($t9) # load with root value
 
@@ -92,7 +111,7 @@ insert_left:
 	lw $t3,4($t9)
 	la $t8,($t9)
 	lw $t9,4($t9)
-	bne $t3,$zero,insert
+	bne $t3,$zero,insert_helper
 	la $t9,($t8)
 	
 	la $t7, ($a0)
@@ -117,7 +136,7 @@ insert_right:
 	lw $t3,8($t9)
 	la $t8,($t9)
 	lw $t9,8($t9)
-	bne $t3,$zero,insert
+	bne $t3,$zero,insert_helper
 	la $t9,($t8)
 	
 	la $t7, ($a0)
