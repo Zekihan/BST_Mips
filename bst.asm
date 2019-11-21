@@ -16,8 +16,8 @@ main:
 	
     la $a0, firstList # load list to a0
 
-	jal create_root
-    jal build #build the tree
+	jal create_root # create root
+    jal build # build the tree
     
     lw $t0, 4($s0) # real address of the left child of the root
     lw $a0, 0($t0) # real value of the left child of the root
@@ -31,53 +31,55 @@ main:
     lw $a1, 0($v0)
     # if returned address's value != 11 print failed 
     jal assertEquals
-	
-    li $v0, 10
+    
+	li $v0, 10
     syscall
 
+
 build:
-	addi $sp,$sp,-4
-	addi $t0,$ra,0 # send ra to 5 lines below
-	sw $t0,4($sp)
+
+	addi $sp,$sp,-4 # save ra
+	sw $ra,4($sp)
 	
-	la $t0, ($a0)
-    jal whileloop
+	la $t0, ($a0) # load list to t0
+    jal whileloop # start loop
 
 
 create_root:
 
-	#temporaryly move a0 to t0
-	la $t0, ($a0)
-	li $a0 16 #enough space for four integers
-	li $v0 9 #syscall 9 (sbrk)
+	
+	la $t0, ($a0) # temporaryly move a0 to t0
+	li $a0 16 # enough space for four integers
+	li $v0 9 # syscall 9 (sbrk)
 	syscall
 	
 	move $a0,$t0
-	move $t1,$v0 #load new address to t1
+	move $t1,$v0 # load new address to t1
 
-	lw $t2,0($a0) #get first element from list
-	sw $t2,0($t1) #put the first number in the list to the tree
+	lw $t2,0($a0) # get first element from list
+	sw $t2,0($t1) # put the first number in the list to the tree
 	sw $zero, 4($t1) # make parent and child nodes with 0
-	sw $zero, 8($t1)
+	sw $zero, 8($t1) 
 	sw $zero, 12($t1)
 	
-	la $a1, ($t1) #load a1 with root address
-	la $s0, ($t1) #load a1 with root address
+	la $a1, ($t1) # load a1 with root address
+	la $s0, ($t1) # load s0 with root address
 
 	jr $ra
+
 whileloop:
 	
-	addi $t0,$t0,4
-	lw $a0,0($t0)
+	addi $t0,$t0,4 # do while? starts with index 1 and ++. t0 is list address
+	lw $a0,0($t0) # load item to a0
 
 
-	beq $a0, -9999, out
-	la $t9, ($a1) #load t9 with root address
+	beq $a0, -9999, out # if -9999 breakout from loop
+	la $t9, ($a1) # load t9 with root address
 	jal insert
 	j whileloop
 
 out:
-	lw $ra,4($sp)
+	lw $ra,4($sp) # get ra saved from the start of build
 	addi $sp,$sp,4
 	jr $ra
 
@@ -97,8 +99,8 @@ insert:
 
 contains:
 	
-	move $t6,$a0
-	la $a0, containsf
+	move $t6,$a0 # temporaryly move a0 to t0
+	la $a0, containsf # print containsf
     li $v0, 4
     syscall
     move $a0,$t6
@@ -106,50 +108,47 @@ contains:
 
 insert_left:
 	
-	lw $t3,4($t9)
-	la $t8,($t9)
-	lw $t9,4($t9)
-	bne $t3,$zero,insert
-	la $t9,($t8)
+	la $t8,($t9) # temporaryly move t9(current root address) to t8
+	lw $t9,4($t9) # take left child address or 0
+	bne $t9,$zero,insert # if not zero use that address as new root 
+	la $t9,($t8) # if zero use old one as root
 	
-	la $t7, ($a0)
-	li $a0 16 #enough space for four integers
-	li $v0 9 #syscall 9 (sbrk)
+	la $t7, ($a0) # temporaryly move a0 to t7
+	li $a0 16 # enough space for four integers
+	li $v0 9 # syscall 9 (sbrk)
 	syscall
 	
 	move $a0,$t7
-	move $t7,$v0
+	move $t7,$v0 # move new address to t7
 
-	sw $a0,0($t7) #put the first number in the list to the tree
-	sw $zero, 4($t7) # make parent and child nodes with 0
+	sw $a0,0($t7) # the argument first address
+	sw $zero, 4($t7) # make children nodes with 0
 	sw $zero, 8($t7)
-	sw $t9, 12($t7)
-	sw $t7, 4($t9)
+	sw $t9, 12($t7) # make parent node as current node
+	sw $t7, 4($t9) # go parents left node make new address
 	
 	jr $ra
 	
 insert_right:
 
+	la $t8,($t9) # temporaryly move t9(current root address) to t8
+	lw $t9,8($t9) # take left child address or 0
+	bne $t9,$zero,insert # if not zero use that address as new root 
+	la $t9,($t8) # if zero use old one as root
 	
-	lw $t3,8($t9)
-	la $t8,($t9)
-	lw $t9,8($t9)
-	bne $t3,$zero,insert
-	la $t9,($t8)
-	
-	la $t7, ($a0)
+	la $t7, ($a0) # temporaryly move a0 to t7
 	li $a0 16 #enough space for four integers
 	li $v0 9 #syscall 9 (sbrk)
 	syscall
 	
 	move $a0,$t7
-	move $t7,$v0
+	move $t7,$v0 # move new address to t7
 
-	sw $a0,0($t7) #put the first number in the list to the tree
-	sw $zero, 4($t7) # make parent and child nodes with 0
+	sw $a0,0($t7) # the argument first address
+	sw $zero, 4($t7) # make children nodes with 0
 	sw $zero, 8($t7)
-	sw $t9, 12($t7)
-	sw $t7, 8($t9)
+	sw $t9, 12($t7) # make parent node as current node
+	sw $t7, 8($t9) # go parents left node make new address
 	
 	jr $ra
 		
