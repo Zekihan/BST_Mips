@@ -8,21 +8,7 @@ secondList: .word 8, 9, 6, 10, 13, 7, 4, 5, -9999
 # assertEquals data
 failf: .asciiz " failed\n"
 passf: .asciiz " passed\n"
-containsf: .asciiz "Already in the tree\n"
-insertf:    .asciiz "Please enter the number to be inserted: "
-insertf2:    .asciiz "New node added with address of \""
-insertf3:    .asciiz "\" \n"
-findf:    .asciiz "Please enter the number to be find: "
-findf2:    .asciiz "Node find in address \""
-findf3:    .asciiz "\" \n"
-findMinMaxf:    .asciiz "Please enter the number 0 for min 1 for max: "
-findMinMaxf2:    .asciiz "Max value is \""
-findMinMaxf3:    .asciiz "Min value is \""
-findMinMaxf4:    .asciiz "\" with address \""
-findMinMaxf5:    .asciiz "\" \n"
-printf:    .asciiz "Tree :\n"
-notfoundf:    .asciiz "Value is not found\n"
-menuf:      .asciiz "Please choose a procedure:\n\t1)Insert\n\t2)Find\n\t3)FindMinMax\n\t4)Print\nEnter the number you choose: "
+containsf: .asciiz " Already in the tree\n"
 asertNumber: .word 0
 
 .text
@@ -33,177 +19,91 @@ main:
 	jal create_root # create root
     jal build # build the tree
     
+    lw $t0, 4($s0) # real address of the left child of the root
+    lw $a0, 0($t0) # real value of the left child of the root
+    li $a1, 3 # expected value of the left child of the root
+    # if left child != 3 then print failed 
+    jal assertEquals
+    
+    li $a0, 11
+    move $a1, $s0
+    jal insert
+    lw $a1, 0($v0)
+    # if returned address's value != 11 print failed 
+    jal assertEquals
+    
+    move $a0, $s0
+    li $a1, 11
+    jal find
+    # if returned address's value != 11 print failed 
+    lw $a0, 0($v1)
+    jal assertEquals
+
+    move $a0, $s0
+    li $a1, 44
+    jal find
+    # if returned value of $v0 != 0 print failed
+    move $a0, $v0
+    li $a1, 0
+    jal assertEquals
+    
+    # this test only works with the first 3 lists. 
+    # if 4th list is used change the value of $a1 to -10 from 3 before calling last assertEquals
+    move $a0, $s0
+    li $a1, 0
+    jal findMinMax
+    # if returned address's value != returned value fail
+    lw $a0,0($v1)
+    move $a1, $v0
+    jal assertEquals
+    # if returned address's value != expected value of min node
+    lw $a0,0($v1)
+    li $a1, 3
+    jal assertEquals
+
+    move $a0, $s0
+    li $a1, 1
+    # if returned address's value != returned value fail
+    jal findMinMax
+    lw $a0,0($v1)
+    move $a1, $v0
+    jal assertEquals
+    # if returned address's value != expected value of max node
+    lw $a0,0($v1)
+    li $a1, 13
+    jal assertEquals
+    
+    move $a0, $s0
     jal print
     
 	li $v0, 10
     syscall
-   
+
 print:
-    
-    la $t0,($a1)
-    lw $a1,4($a1)
-    j print
-    la $a1,($t0)
-    
-    la $t0,($a1)
-    lw $a1,8($a1)
-    j print
-    la $a1,($t0)
-    
-    jr $ra
-
-menu:
-
-	li $v0, 4     #command for printing a string
-    la $a0, menuf #loading the string to print into the argument to enable printing
-    syscall
-    
-    #the next block of code is for reading the first number provided by the user
-    li $v0, 5    #command for reading an integer
-    syscall      #executing the command for reading an integer
-    move $t0, $v0     #moving the number read from the user input into the temporary register $t0
-    
-    beq $t0,1,get_insert_input
-    beq $t0,2,get_find_input
-    beq $t0,3,get_findMinMax_input
-    beq $t0,4,get_print
-    
-    li $v0, 10
-    syscall
-get_print:
-	li $v0, 4     #command for printing a string
-    la $a0, printf #loading the string to print into the argument to enable printing
-    jal print
-    syscall
-    
-    j menu
-get_findMinMax_input:
-	li $v0, 4     #command for printing a string
-    la $a0, findMinMaxf #loading the string to print into the argument to enable printing
-    syscall
-    
-    #the next block of code is for reading the first number provided by the user
-    li $v0, 5    #command for reading an integer
-    syscall      #executing the command for reading an integer
-    move $a1, $v0
-    
-    move $a0, $s0
-    jal findMinMax
-    
-    move $t0,$v0
-    move $t1,$v1
-    
-    beqz $a0,min_print
-    
-    li $v0, 4     #command for printing a string
-    la $a0, findMinMaxf2 #loading the string to print into the argument to enable printing
-    syscall
-    
-    li $v0, 1    #command for printing a string
-    la $a0, ($t0) #loading the string to print into the argument to enable printing
-    syscall
-    
-    li $v0, 4     #command for printing a string
-    la $a0, findMinMaxf4 #loading the string to print into the argument to enable printing
-    syscall
-    
-    li $v0, 1    #command for printing a string
-    la $a0, ($t1) #loading the string to print into the argument to enable printing
-    syscall
-    
-    li $v0, 4     #command for printing a string
-    la $a0, findMinMaxf5 #loading the string to print into the argument to enable printing
-    syscall
-    
-    j menu
-min_print:
-	li $v0, 4     #command for printing a string
-    la $a0, findMinMaxf3 #loading the string to print into the argument to enable printing
-    syscall
-    
-    li $v0, 1    #command for printing a string
-    la $a0, ($t0) #loading the string to print into the argument to enable printing
-    syscall
-    
-    li $v0, 4     #command for printing a string
-    la $a0, findMinMaxf4 #loading the string to print into the argument to enable printing
-    syscall
-    
-    li $v0, 1    #command for printing a string
-    la $a0, ($t1) #loading the string to print into the argument to enable printing
-    syscall
-    
-    li $v0, 4     #command for printing a string
-    la $a0, findMinMaxf5 #loading the string to print into the argument to enable printing
-    syscall
-    
-    j menu
-get_find_input:
-
-	li $t0,0
-	li $v1,0
 	
-	li $v0, 4     #command for printing a string
-    la $a0, findf #loading the string to print into the argument to enable printing
-    syscall
-    
-    #the next block of code is for reading the first number provided by the user
-    li $v0, 5    #command for reading an integer
-    syscall      #executing the command for reading an integer
-    move $a1, $v0
-    
-    move $a0, $s0
-    jal find
-    
-    move $t0,$v1
-    
-    beqz $t0,menu
-    
-    li $v0, 4     #command for printing a string
-    la $a0, findf2 #loading the string to print into the argument to enable printing
-    syscall
-    
-    li $v0, 1    #command for printing a string
-    la $a0, ($t0) #loading the string to print into the argument to enable printing
-    syscall
-    
-    li $v0, 4     #command for printing a string
-    la $a0, findf3 #loading the string to print into the argument to enable printing
-    syscall
-    
-    j menu
-   
-get_insert_input:
-	li $v0, 4     #command for printing a string
-    la $a0, insertf #loading the string to print into the argument to enable printing
-    syscall
-    
-    #the next block of code is for reading the first number provided by the user
-    li $v0, 5    #command for reading an integer
-    syscall      #executing the command for reading an integer
-    move $a0, $v0
-    
-    move $a1, $s0
-    jal insert
-    
-    move $t0,$v0
-    
-    beqz $t0,menu
-    
-    li $v0, 4     #command for printing a string
-    la $a0, insertf2 #loading the string to print into the argument to enable printing
-    syscall
-    
-    li $v0, 1    #command for printing a string
-    la $a0, ($t0) #loading the string to print into the argument to enable printing
-    syscall
-    
-    li $v0, 4     #command for printing a string
-    la $a0, insertf3 #loading the string to print into the argument to enable printing
-    syscall
-    
-    j menu
-		
+	li $a0 16 # enough space for four integers
+	li $v0 9 # syscall 9 (sbrk)
+	syscall
+	
+	move $t1,$v0 # load new address to t1
+
+	li $t2,-9999 # get first element from list
+	sw $t2,0($t1) # put the first number in the list to the tree
+	sw $t1, 4($t1) # make parent and child nodes with 0
+	sw $t1, 8($t1) 
+	sw $t1, 12($t1)
+	
+	la $a1,($s0)
+	li $t0,1
+	j print_level
+
+print_level:
+	
+	addi $t0,$t0,1
+
+	bne $t0,5 print_level
+	jr $ra
+
 findMinMax:
 	
 	lw $v0,($a0) # load root value to v0
@@ -256,11 +156,6 @@ found:
 	la $v1,($a0) # make return v1 the address of node
 	jr $ra
 notfound:
-
-    li $v0, 4     #command for printing a string
-    la $a0, notfoundf #loading the string to print into the argument to enable printing
-    syscall
-    
 	li $v0,0 # make return v0 0
 	jr $ra
 build:
@@ -330,8 +225,6 @@ contains:
     li $v0, 4
     syscall
     move $a0,$t6
-    la $a1,($s0)
-    li $v0,0
     jr $ra	
 
 insert_left:
