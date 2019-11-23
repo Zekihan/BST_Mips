@@ -74,34 +74,24 @@ main:
     jal assertEquals
     
     move $a0, $s0
-    jal print
+    #jal print
     
 	li $v0, 10
     syscall
 
 print:
-	
-	li $a0 16 # enough space for four integers
-	li $v0 9 # syscall 9 (sbrk)
-	syscall
-	
-	move $t1,$v0 # load new address to t1
-
-	li $t2,-9999 # get first element from list
-	sw $t2,0($t1) # put the first number in the list to the tree
-	sw $t1, 4($t1) # make parent and child nodes with 0
-	sw $t1, 8($t1) 
-	sw $t1, 12($t1)
-	
 	la $a1,($s0)
-	li $t0,1
+	addi $sp,$sp,-4 # save ra
+	sw $a1,4($sp)
 	j print_level
 
 print_level:
 	
-	addi $t0,$t0,1
-
-	bne $t0,5 print_level
+	
+	lw $a0,0($a1)
+    li $v0, 4
+    syscall
+    bne $zero,$a0,print_level
 	jr $ra
 
 findMinMax:
