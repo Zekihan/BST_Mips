@@ -47,76 +47,9 @@ main:
     li $a1, 0
     jal assertEquals
     
-    # this test only works with the first 3 lists. 
-    # if 4th list is used change the value of $a1 to -10 from 3 before calling last assertEquals
-    move $a0, $s0
-    li $a1, 0
-    jal findMinMax
-    # if returned address's value != returned value fail
-    lw $a0,0($v1)
-    move $a1, $v0
-    jal assertEquals
-    # if returned address's value != expected value of min node
-    lw $a0,0($v1)
-    li $a1, 3
-    jal assertEquals
-
-    move $a0, $s0
-    li $a1, 1
-    # if returned address's value != returned value fail
-    jal findMinMax
-    lw $a0,0($v1)
-    move $a1, $v0
-    jal assertEquals
-    # if returned address's value != expected value of max node
-    lw $a0,0($v1)
-    li $a1, 13
-    jal assertEquals
-    
-    move $a0, $s0
-    #jal print
-    
 	li $v0, 10
     syscall
 
-print:
-	la $a1,($s0)
-	addi $sp,$sp,-4 # save ra
-	sw $a1,4($sp)
-	j print_level
-
-print_level:
-	
-	
-	lw $a0,0($a1)
-    li $v0, 4
-    syscall
-    bne $zero,$a0,print_level
-	jr $ra
-
-findMinMax:
-	
-	lw $v0,($a0) # load root value to v0
-	la $v1,($a0) # load root address to v1
-	
-	beq $a1,$zero,find_min # if a1 is 0 find min
-	beq $a1,1,find_max # if a1 iz 1 find max
-find_min:
-	beq $zero,$a0, reached # check if reached a 0 value
-	lw $v0,($a0) # load node value to v0
-	la $v1,($a0) # load node address to v1
-	lw $a0,4($a0) # load left node
-	
-	j find_min
-find_max:
-	beq $zero,$a0, reached # check if reached a 0 value
-	lw $v0,($a0) # load node value to v0
-	la $v1,($a0) # load node address to v1
-	lw $a0,8($a0) # load right node
-	
-	j find_max
-reached:
-	jr $ra
 find:
 	lw $t2,0($a0) # load with root value
 
