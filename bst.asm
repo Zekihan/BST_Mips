@@ -18,6 +18,7 @@ findMinMaxf5:    .asciiz "\" \n"
 printf:    .asciiz "Tree :\n"
 notfoundf:    .asciiz "Value is not found\n"
 menuf:      .asciiz "Please choose a procedure:\n\t1)Insert\n\t2)Find\n\t3)FindMinMax\n\t4)Print\nEnter the number you choose: "
+asertNumber: .word 0
 
 .text
 main:
@@ -33,9 +34,9 @@ main:
     syscall
    
 print:
+    
+    jr $ra
 
-
-	jr $ra
 menu:
 
 	li $v0, 4     #command for printing a string
