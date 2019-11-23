@@ -21,7 +21,8 @@ menuf:      .asciiz "Please choose a procedure:\n\t1)Insert\n\t2)Find\n\t3)FindM
 
 .text
 main:
-	
+    #For input and output I followed the file uploaded to cms not the homework pdf.
+
     la $a0, firstList # load list to a0
 
 	jal create_root # create root
