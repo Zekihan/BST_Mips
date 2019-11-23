@@ -2,7 +2,12 @@
 # -9999 marks end of the list
 firstList: .word 8, 3, 6, 10, 13, 7, 4, 5, -9999
 
+secondList: .word 8, 9, 6, 10, 13, 7, 4, 5, -9999
+
+
 # assertEquals data
+failf: .asciiz " failed\n"
+passf: .asciiz " passed\n"
 containsf: .asciiz "Already in the tree\n"
 insertf:    .asciiz "Please enter the number to be inserted: "
 insertf2:    .asciiz "New node added with address of \""
@@ -28,12 +33,22 @@ main:
 	jal create_root # create root
     jal build # build the tree
     
-    jal menu
+    jal print
     
 	li $v0, 10
     syscall
    
 print:
+    
+    la $t0,($a1)
+    lw $a1,4($a1)
+    j print
+    la $a1,($t0)
+    
+    la $t0,($a1)
+    lw $a1,8($a1)
+    j print
+    la $a1,($t0)
     
     jr $ra
 
@@ -366,3 +381,28 @@ insert_right:
 
 	la $a1,($s0) # load original root to a1	
 	jr $ra
+		
+	
+	
+assertEquals:
+    move $t2, $a0
+    # increment count of total assertions.
+    la $t0, asertNumber
+    lw $t1, 0($t0)
+    addi $t1, $t1, 1
+    sw $t1, 0($t0) 
+    add $a0, $t1, $zero
+    li $v0, 1
+    syscall
+
+    # print passed or failed.
+    beq $t2, $a1, passed
+    la $a0, failf
+    li $v0, 4
+    syscall
+    jr $ra
+passed:
+    la $a0, passf
+    li $v0, 4
+    syscall
+    jr $ra
