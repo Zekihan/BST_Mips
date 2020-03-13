@@ -1,2 +1,2 @@
-# 250201007_P1
+# BST in MIPS
 Binary search tree in assembly mips
